@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Application</title>
+</head>
+<body>
+<div>
+    <input type="text" id="userId" placeholder="User ID"/>
+    <button onclick="subscribe()">Subscribe</button>
+</div>
+<div>
+    <input type="text" id="receiver" placeholder="Receiver ID"/>
+    <input type="text" id="message" placeholder="Message"/>
+    <button onclick="sendMessage()">Send</button>
+</div>
+<ul id="messages"></ul>
+
+<script>
+    let eventSource;
+
+    function subscribe() {
+        const userId = document.getElementById('userId').value;
+        eventSource = new EventSource(`/sse/subscribe/${userId}`);
+        eventSource.onmessage = function(event) {
+            const message = JSON.parse(event.data);
+            const messages = document.getElementById('messages');
+            const newMessage = document.createElement('li');
+            newMessage.textContent = `From ${message.sender}: ${message.content}`;
+            messages.appendChild(newMessage);
+        };
+    }
+
+    function sendMessage() {
+        const sender = document.getElementById('userId').value;
+        const receiver = document.getElementById('receiver').value;
+        const content = document.getElementById('message').value;
+
+        fetch('/sse/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                sender: sender,
+                receiver: receiver,
+                content: content
+            }),
+        });
+    }
+</script>
+</body>
+</html>
