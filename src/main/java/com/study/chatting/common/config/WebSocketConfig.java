@@ -13,7 +13,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         // 웹 소켓을 활성화하고, 엔드포인트 /chat을 설정한다.
-        registry.addHandler(new ChatWebSocketHandler(), "/chat")
+        registry.addHandler(new ChatWebSocketHandler(), "/wss/chat")
                 .addInterceptors(new HttpSessionHandshakeInterceptor())
                 .setAllowedOriginPatterns("*");
     }
