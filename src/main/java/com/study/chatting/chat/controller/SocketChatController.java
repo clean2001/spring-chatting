@@ -3,6 +3,7 @@ package com.study.chatting.chat.controller;
 import com.study.chatting.chat.domain.SocketChatMessage;
 import com.study.chatting.chat.repository.SocketChatMessageRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.annotation.SendToUser;
@@ -27,12 +28,13 @@ public class SocketChatController {
     @Autowired
     private SimpMessageSendingOperations messagingTemplate;
 
-    @MessageMapping("/chat.sendMessage") // 웹소켓 메시지를 특정 경로로 매핑한다.
-    @SendToUser("/queue/reply")
-    public void sendMessage(SocketChatMessage chatMessage, SimpMessageHeaderAccessor headerAccessor) {
+    // 그러면 이거의 정체는 뭐지?
+    @MessageMapping("/chatroom/{roomNumber}") // 웹소켓 메시지를 특정 경로로 매핑한다. (pub/chatroom/1)
+//    @SendTo("/sub/chatroom/{roomNumber}")
+    public void sendMessage(SocketChatMessage chatMessage, @DestinationVariable String roomNumber) {
         log.info("line 33: {}", chatMessage);
-        socketChatMessageRepository.save(chatMessage);
-        messagingTemplate.convertAndSendToUser(chatMessage.getReceiver(), "/queue/reply", chatMessage);
+        socketChatMessageRepository.save(chatMessage); // 메시지를 저장한다.
+        messagingTemplate.convertAndSend("/sub/chatroom/" + roomNumber, chatMessage);
     }
 
     @GetMapping("/api/messages/{sender}/{receiver}")
